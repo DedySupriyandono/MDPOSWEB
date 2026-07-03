@@ -1,0 +1,74 @@
+/*
+ * datepicker-icons.css
+ *
+ * bootstrap-datetimepicker.min.js hard-codes Glyphicon class names
+ * (.glyphicon-chevron-left, .glyphicon-calendar, dsb) untuk tombol
+ * navigasi. Project ini pakai FontAwesome 6, jadi Glyphicon CSS tidak
+ * ke-load → arrow next/prev bulan tidak muncul.
+ *
+ * Patch: alias .glyphicon-* → FontAwesome unicode supaya semua
+ * datepicker dapat arrow tanpa edit per-instance config.
+ */
+.bootstrap-datetimepicker-widget .glyphicon,
+.datepicker-dropdown .glyphicon,
+.datepicker .glyphicon {
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", FontAwesome, sans-serif;
+    font-weight: 900;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    display: inline-block;
+    line-height: 1;
+}
+
+.bootstrap-datetimepicker-widget .glyphicon-chevron-left:before,
+.datepicker .glyphicon-chevron-left:before {
+    content: "\f053";
+}
+
+.bootstrap-datetimepicker-widget .glyphicon-chevron-right:before,
+.datepicker .glyphicon-chevron-right:before {
+    content: "\f054";
+}
+
+.bootstrap-datetimepicker-widget .glyphicon-chevron-up:before {
+    content: "\f077";
+}
+
+.bootstrap-datetimepicker-widget .glyphicon-chevron-down:before {
+    content: "\f078";
+}
+
+.bootstrap-datetimepicker-widget .glyphicon-calendar:before {
+    content: "\f133";
+}
+
+.bootstrap-datetimepicker-widget .glyphicon-time:before {
+    content: "\f017";
+}
+
+.bootstrap-datetimepicker-widget .glyphicon-screenshot:before {
+    content: "\f192";
+}
+
+.bootstrap-datetimepicker-widget .glyphicon-trash:before {
+    content: "\f1f8";
+}
+
+.bootstrap-datetimepicker-widget .glyphicon-remove:before {
+    content: "\f00d";
+}
+
+/* Tombol picker switch (klik "April 2027" untuk pilih bulan/tahun) — kasih
+   cursor pointer + hover state supaya jelas bisa di-klik. */
+.bootstrap-datetimepicker-widget .picker-switch,
+.bootstrap-datetimepicker-widget th[class*="picker-switch"] {
+    cursor: pointer;
+}
+.bootstrap-datetimepicker-widget td[class*="prev"],
+.bootstrap-datetimepicker-widget td[class*="next"],
+.bootstrap-datetimepicker-widget th.prev,
+.bootstrap-datetimepicker-widget th.next {
+    cursor: pointer;
+}

@@ -1,0 +1,17 @@
+# Firebase / Google credentials
+firebase-admin.json
+firebase-admin*.json
+firebase-adminsdk*.json
+serviceAccount*.json
+*service-account*.json
+google-credentials*.json
+google-services.json
+
+# config production / secret
+appsettings.Production.json
+appsettings.Local.json
+
+# build output optional
+bin/
+obj/
+.vs/
