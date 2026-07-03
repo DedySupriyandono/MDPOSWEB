@@ -10,6 +10,7 @@ google-services.json
 # config production / secret
 appsettings.Production.json
 appsettings.Local.json
+appsettings.json
 
 # build output optional
 bin/
