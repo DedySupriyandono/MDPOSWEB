@@ -240,9 +240,9 @@ setTimeout(function () {
         '</div>' +
         '</div>' +
         '<div class="col-xl-6">' +
-        '<div class="footer-reset-btn">' +
-        '<a href="#" class="btn btn-primary w-100">Buy Now</a> ' +
-		
+        /* '<div class="footer-reset-btn">' +
+        '<a href="#" class="btn btn-primary w-100">Buy Now</a> ' + */
+
         '</form>' +
         '</div>' +
         '</div>' +
