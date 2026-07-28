@@ -482,6 +482,43 @@ $(document).ready(function () {
 			}
 		});
 		$('.sidebar-menu ul li.submenu a.active').parents('li:last').children('a:first').addClass('active').trigger('click');
+
+		// Scroll active menu ke tengah viewport sidebar — kalau list menu
+		// panjang & item aktif ada di bawah, user tidak perlu scroll manual
+		// setelah navigate. Delay 600ms krn:
+		//   1. trigger('click') di atas bikin submenu slideDown (~350ms).
+		//   2. Active class di-inject via DOMContentLoaded handler di
+		//      _LayoutList.cshtml — timing bisa serong sedikit.
+		setTimeout(function () {
+			// Selector "li.active" — target leaf item (bukan parent submenu
+			// toggle yg juga dapat class active via _LayoutList JS).
+			var el = document.querySelector('.sidebar-menu li.active');
+			if (!el) return;
+
+			// slimscroll plugin set overflow:hidden di .sidebar-inner tapi
+			// SCROLL-nya masih pakai native scrollTop di element itu (plugin
+			// intercept mousewheel + set scrollTop). Jadi target explicit
+			// .sidebar-inner — walk-up ancestors ke overflow:auto akan salah
+			// (skip sidebar-inner → ketemu body/html yg bukan real scroller
+			// karena sidebar position:fixed).
+			var container = el.closest('.sidebar-inner');
+			if (!container) return;
+
+			var elRect  = el.getBoundingClientRect();
+			var conRect = container.getBoundingClientRect();
+			var offset  = (elRect.top - conRect.top)
+			            - (container.clientHeight / 2)
+			            + (el.offsetHeight / 2);
+			container.scrollTop += offset;
+
+			// Sync jQuery slimScroll visual scrollbar — kalau plugin ke-load,
+			// panggil scrollTo supaya scrollbar UI ikut posisi baru. Tanpa
+			// ini, sidebar content scroll tapi bar visual tetap di atas.
+			if (window.jQuery && typeof window.jQuery.fn.slimScroll === 'function') {
+				try { window.jQuery(container).slimScroll({ scrollTo: container.scrollTop + 'px' }); }
+				catch (e) { /* plugin optional, silent */ }
+			}
+		}, 600);
 	}
 
 
