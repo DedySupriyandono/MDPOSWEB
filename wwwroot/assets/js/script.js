@@ -1608,8 +1608,9 @@ $(document).ready(function () {
 
 function toggleFullscreen(elem) {
 	elem = elem || document.documentElement;
-	if (!document.fullscreenElement && !document.mozFullScreenElement &&
-		!document.webkitFullscreenElement && !document.msFullscreenElement) {
+	var isFs = !!(document.fullscreenElement || document.mozFullScreenElement ||
+		document.webkitFullscreenElement || document.msFullscreenElement);
+	if (!isFs) {
 		if (elem.requestFullscreen) {
 			elem.requestFullscreen();
 		} else if (elem.msRequestFullscreen) {
@@ -1619,6 +1620,9 @@ function toggleFullscreen(elem) {
 		} else if (elem.webkitRequestFullscreen) {
 			elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
 		}
+		// Simpan preferensi user — dipakai overlay reload/new-tab utk prompt
+		// re-enter (karena Fullscreen API wajib user gesture, tidak bisa auto).
+		try { localStorage.setItem('mdposFs', '1'); } catch (e) { /* ignore */ }
 	} else {
 		if (document.exitFullscreen) {
 			document.exitFullscreen();
@@ -1629,8 +1633,94 @@ function toggleFullscreen(elem) {
 		} else if (document.webkitExitFullscreen) {
 			document.webkitExitFullscreen();
 		}
+		// User klik exit — matikan preferensi supaya reload berikutnya
+		// tidak prompt lagi.
+		try { localStorage.setItem('mdposFs', '0'); } catch (e) { /* ignore */ }
 	}
 }
+
+// Prompt "Tap to Full Screen" saat page load.
+// Fullscreen API tidak bisa auto-triggered — spec browser wajib user gesture.
+// Kalau user pernah aktifkan fullscreen (localStorage.mdposFs === "1"),
+// tampilkan overlay besar; klik SATU KALI di mana saja = user gesture →
+// requestFullscreen sukses. Overlay hilang otomatis.
+(function () {
+	function isFs() {
+		return !!(document.fullscreenElement || document.mozFullScreenElement ||
+			document.webkitFullscreenElement || document.msFullscreenElement);
+	}
+
+	function shouldPrompt() {
+		try { return localStorage.getItem('mdposFs') === '1' && !isFs(); }
+		catch (e) { return false; }
+	}
+
+	function buildOverlay() {
+		if (document.getElementById('mdposFsPrompt')) return;
+		var o = document.createElement('div');
+		o.id = 'mdposFsPrompt';
+		o.style.cssText = [
+			'position:fixed', 'inset:0', 'z-index:2147483647',
+			'background:rgba(15,23,42,0.88)', 'color:#fff',
+			'display:flex', 'flex-direction:column',
+			'align-items:center', 'justify-content:center',
+			'gap:14px', 'cursor:pointer', 'font-family:inherit',
+			'user-select:none', 'text-align:center', 'padding:24px'
+		].join(';');
+		o.innerHTML =
+			'<div style="font-size:56px;line-height:1">🖥️</div>' +
+			'<div style="font-size:22px;font-weight:600">Aktifkan Full Screen</div>' +
+			'<div style="font-size:13px;opacity:0.8;max-width:360px">' +
+			'Preferensi Anda tersimpan. Klik di mana saja untuk lanjut ke mode full screen.</div>' +
+			'<a href="#" id="mdposFsPromptDisable" ' +
+			'style="margin-top:8px;font-size:12px;color:#fde68a;text-decoration:underline">' +
+			'Matikan preferensi full screen</a>';
+		document.body.appendChild(o);
+
+		o.addEventListener('click', function (e) {
+			if (e.target && e.target.id === 'mdposFsPromptDisable') return;
+			e.preventDefault();
+			try { toggleFullscreen(); } catch (err) { /* browser refuse */ }
+			// Overlay dihilangkan via fullscreenchange listener (kalau sukses)
+			// atau di-remove manual kalau browser refuse (mis. security).
+			setTimeout(function () {
+				if (!isFs()) removeOverlay();
+			}, 500);
+		});
+
+		var disableLink = o.querySelector('#mdposFsPromptDisable');
+		disableLink.addEventListener('click', function (e) {
+			e.preventDefault();
+			e.stopPropagation();
+			try { localStorage.setItem('mdposFs', '0'); } catch (err) { /* ignore */ }
+			removeOverlay();
+		});
+	}
+
+	function removeOverlay() {
+		var o = document.getElementById('mdposFsPrompt');
+		if (o && o.parentNode) o.parentNode.removeChild(o);
+	}
+
+	function init() {
+		if (shouldPrompt()) buildOverlay();
+	}
+
+	// Sync overlay dgn state fullscreen — kalau user sudah masuk fullscreen
+	// (via prompt atau tombol), hilangkan overlay.
+	['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange']
+		.forEach(function (evt) {
+			document.addEventListener(evt, function () {
+				if (isFs()) removeOverlay();
+			});
+		});
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', init);
+	} else {
+		init();
+	}
+})();
 
 //Increment Decrement Numberes
 $(".quantity-btn").on("click", function () {
