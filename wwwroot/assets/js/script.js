@@ -149,6 +149,37 @@ $(document).ready(function () {
 			}
 		});
 	}
+	// Natural sort: "USERSO2" < "USERSO10" (bukan alphabetic "USERSO10" < "USERSO2")
+	// Pakai localeCompare native browser dgn numeric:true — no plugin, cross-browser.
+	// Override default sort DataTables → berlaku untuk SEMUA tabel .datanew.
+	// Untuk string tanpa angka, perilaku identik dgn sort lexicographic sebelumnya.
+	//
+	// Kita override utk 3 tipe kolom DataTables:
+	//   - 'string'      : cell teks polos
+	//   - 'html'        : cell yg berisi tag HTML (mis. <a>USERSO1</a>) → auto-detect html
+	//   - 'string-utf8' : fallback utk teks non-ASCII
+	if ($.fn.dataTableExt && $.fn.dataTableExt.oSort) {
+		var naturalAsc = function (a, b) {
+			return (a || '').toString().localeCompare((b || '').toString(),
+				undefined, { numeric: true, sensitivity: 'base' });
+		};
+		var naturalDesc = function (a, b) { return naturalAsc(b, a); };
+
+		// Untuk 'html' — strip tag dulu sebelum compare (bawaan DataTables juga
+		// strip tag utk sort html; kita tiru + tambah natural compare).
+		var stripHtml = function (s) {
+			return (s || '').toString().replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+		};
+		var htmlAsc  = function (a, b) { return naturalAsc(stripHtml(a), stripHtml(b)); };
+		var htmlDesc = function (a, b) { return naturalAsc(stripHtml(b), stripHtml(a)); };
+
+		$.fn.dataTableExt.oSort['string-asc']      = naturalAsc;
+		$.fn.dataTableExt.oSort['string-desc']     = naturalDesc;
+		$.fn.dataTableExt.oSort['string-utf8-asc']  = naturalAsc;
+		$.fn.dataTableExt.oSort['string-utf8-desc'] = naturalDesc;
+		$.fn.dataTableExt.oSort['html-asc']        = htmlAsc;
+		$.fn.dataTableExt.oSort['html-desc']       = htmlDesc;
+	}
 	// Datatable
 	if ($('.datanew').length > 0) {
 		$('.datanew').DataTable({
