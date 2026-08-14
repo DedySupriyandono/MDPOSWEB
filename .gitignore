@@ -16,3 +16,6 @@ appsettings.json
 bin/
 obj/
 .vs/
+
+# delete
+refs/
