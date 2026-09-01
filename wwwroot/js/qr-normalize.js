@@ -18,8 +18,14 @@
     async function qrExtract(raw) {
         var s = stripWhitespace(raw);
         if (!s) return '';
-        // Kalau bukan URL, skip round-trip — server pun akan return as-is.
-        if (s.indexOf('://') < 0) return s;
+        // Shortcut LAMA `if (s.indexOf('://') < 0) return s;` bikin bug:
+        // kategori voucher yg pattern-nya (\d{12})\d{3}$ (extract 12-digit
+        // sebelum 3-digit checksum) TIDAK terpanggil kalau user paste raw
+        // 15-digit (bukan URL). Client jadi treat "901947202414050" sbg
+        // 15-digit → compute range 38 juta → block. Skrg selalu round-trip
+        // ke server → SmartExtract coba semua qr_pattern kategori → extract
+        // 12-digit yg benar. Latency < 50ms lokal, cuma dipanggil di
+        // trigger scan (bukan per-keystroke) — cost dapat diabaikan.
         try {
             var res = await fetch('/Picking/ExtractSn', {
                 method: 'POST',
