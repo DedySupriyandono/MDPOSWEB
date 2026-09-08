@@ -354,6 +354,14 @@
         "runtime": {
           "MDPOS.dll": {}
         },
+        "resources": {
+          "en/MDPOS.resources.dll": {
+            "locale": "en"
+          },
+          "id/MDPOS.resources.dll": {
+            "locale": "id"
+          }
+        },
         "compile": {
           "MDPOS.dll": {}
         }
